@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const notes = require("./db/db.json");
 const uuid = require('uuid');
-//const res = require('express/lib/response');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -24,12 +23,38 @@ app.use(express.json());
 
 
 // API ROUTES
-// Get notes
+// Get all notes
 app.get('/api/notes', (req, res) => {   
     res.json(notes);   
 });
+// get note by id
+app.get('/api/notes/:id', (req, res) => {
+    const result = notes.filter(note => note.id === req.params.id);
+    if (result) {
+        res.json(result);
+      } else {
+        res.send(404);
+      }
+});
 
-// Post notes
+app.delete('/api/notes/:id', (req, res) => {
+    const result = notes.filter(note => note.id === req.params.id);
+    let index = notes.findIndex(note => note.id === req.params.id); // got this syntax from: https://stackoverflow.com/questions/26468557/return-index-value-from-filter-method-javascript
+    if (result && index > -1) {
+        //res.json(result);
+        console.log(index);
+        notes.splice(index, 1);
+        res.json(notes);
+        fs.writeFileSync(
+            path.join(__dirname, '/db/db.json'),
+            JSON.stringify(notes, null, 2)
+        );
+      } else {
+        res.send(404);
+      }
+});
+
+// Post new notes
 app.post('/api/notes', (req,res) => {
     const note = {
         title: req.body.title,
