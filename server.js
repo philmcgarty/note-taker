@@ -1,6 +1,9 @@
 const express = require('express');
 const path = require('path');
-const { notes } = require("./db/db.json");
+const fs = require('fs');
+const notes = require("./db/db.json");
+const uuid = require('uuid');
+//const res = require('express/lib/response');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -8,6 +11,16 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(express.static(__dirname + "/public"));
 app.use(express.json());
+
+// function createNewNote(body){
+//     const newNote = {
+//         id: uuid.v4(),
+//         title: body.title,
+//         text: body.text
+//     }
+//     notes.push(newNote);
+//     res.json(notes);
+// };
 
 
 // API ROUTES
@@ -18,8 +31,18 @@ app.get('/api/notes', (req, res) => {
 
 // Post notes
 app.post('/api/notes', (req,res) => {
-    const note = req.body;
-    res.json(note);
+    const note = {
+        title: req.body.title,
+        text: req.body.text,
+        id: uuid.v4()
+    };
+
+    notes.push(note);
+    res.json(notes);
+    fs.writeFileSync(
+        path.join(__dirname, '/db/db.json'),
+        JSON.stringify(notes, null, 2)
+    );
 });
 
 // HTML ROUTES
