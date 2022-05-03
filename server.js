@@ -2,24 +2,14 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const notes = require("./db/db.json");
-const uuid = require('uuid');
+const uuid = require('uuid'); // for generating unique id
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 
-// Middleware
+// MIDDLEWARE
 app.use(express.static(__dirname + "/public"));
 app.use(express.json());
-
-// function createNewNote(body){
-//     const newNote = {
-//         id: uuid.v4(),
-//         title: body.title,
-//         text: body.text
-//     }
-//     notes.push(newNote);
-//     res.json(notes);
-// };
 
 
 // API ROUTES
@@ -27,7 +17,8 @@ app.use(express.json());
 app.get('/api/notes', (req, res) => {   
     res.json(notes);   
 });
-// get note by id
+
+// Get note by id
 app.get('/api/notes/:id', (req, res) => {
     const result = notes.filter(note => note.id === req.params.id);
     if (result) {
@@ -37,17 +28,18 @@ app.get('/api/notes/:id', (req, res) => {
       }
 });
 
+// Get note by id and delete
 app.delete('/api/notes/:id', (req, res) => {
     const result = notes.filter(note => note.id === req.params.id);
     let index = notes.findIndex(note => note.id === req.params.id); // got this syntax from: https://stackoverflow.com/questions/26468557/return-index-value-from-filter-method-javascript
     if (result && index > -1) {
-        //res.json(result);
-        console.log(index);
-        notes.splice(index, 1);
+        //console.log(index);
+        notes.splice(index, 1); // removes record at index from the array
         res.json(notes);
+        // overwrite file with new data
         fs.writeFileSync(
             path.join(__dirname, '/db/db.json'),
-            JSON.stringify(notes, null, 2)
+            JSON.stringify(notes, null, 2) // used this formatting from module
         );
       } else {
         res.send(404);
@@ -61,14 +53,15 @@ app.post('/api/notes', (req,res) => {
         text: req.body.text,
         id: uuid.v4()
     };
-
     notes.push(note);
     res.json(notes);
+    // overwrite file with new data
     fs.writeFileSync(
         path.join(__dirname, '/db/db.json'),
-        JSON.stringify(notes, null, 2)
+        JSON.stringify(notes, null, 2) // used this formatting from module
     );
 });
+
 
 // HTML ROUTES
 // for index.html
@@ -89,11 +82,3 @@ app.get('*', (req,res) => {
 app.listen(PORT, ()=>{
     console.log(`Server on port ${PORT}`);
 });
-
-// The following API routes should be created:
-
-// GET /api/notes should read the db.json file and return all saved notes as JSON.
-
-// POST /api/notes should receive a new note to save on the request body, 
-// add it to the db.json file, and then return the new note to the client. 
-// You'll need to find a way to give each note a unique id when it's saved (look into npm packages that could do this for you).
